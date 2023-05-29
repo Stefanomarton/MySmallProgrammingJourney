@@ -2,10 +2,19 @@ import argparse
 import os
 import csv
 import random
+import click
 from matplotlib import pyplot as plt
 
 
+@click.group()
+def cli():
+    """CLI group."""
+    pass
+
+
+@click.command()
 def create_plot(csv_files, output_format, plot_style):
+    """Create a plot starting from data file."""
     fig, ax = plt.subplots()  # Create a single figure and axes objects
     colors = ["black", "blue", "red"]
 
