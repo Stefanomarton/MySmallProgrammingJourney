@@ -17,6 +17,7 @@ class CSVPlotter:
             "green",
             "orange",
             "purple",
+            "black",
         ]  # Add more colors if needed
 
     def process_csv_file(self, csv_file):
@@ -37,20 +38,22 @@ class CSVPlotter:
     def create_plot(self):
         if self.combined:
             fig, ax = plt.subplots()  # Create a single figure and axes objects
+        else:
+            fig, ax = None, None
 
-        for index, csv_file in enumerate(self.csv_files):
+        for csv_file in self.csv_files:
             x, y = self.process_csv_file(csv_file)
 
-            color = random.choice(self.colors)
+            if self.combined:
+                color = random.choice(self.colors)  # Select a random color
+            else:
+                color = "black"  # Set the color to black for individual plots
+
             label = os.path.splitext(os.path.basename(csv_file))[0]
 
             if self.plot_style == "IR":
                 if self.combined:
                     ax.plot(x, y, color=color, linewidth=0.4, label=label)
-                    ax.set_xlabel("Numero d'onda / $cm^{-1}$")
-                    ax.set_ylabel("T / %")
-                    ax.set_xlim(4000, 500)  # Set the x-axis limits
-                    ax.set_ylim(0, 100)  # Set the y-axis limits
                 else:
                     fig, ax = plt.subplots()
                     ax.plot(x, y, color=color, linewidth=0.4, label=label)
@@ -69,8 +72,6 @@ class CSVPlotter:
             elif self.plot_style == "NMR":
                 if self.combined:
                     ax.plot(x, y, color=color, linewidth=0.2, label=label)
-                    ax.set_xlabel("ppm")
-                    ax.set_ylabel("A / %")
                 else:
                     fig, ax = plt.subplots()
                     ax.plot(x, y, color=color, linewidth=0.2, label=label)
@@ -83,8 +84,6 @@ class CSVPlotter:
                     plt.savefig(output_filename, format=self.output_format)
                     plt.clf()
                     click.echo(f"Plot saved as {output_filename}")
-
-            self.colors.remove(color)
 
         if self.combined:
             combined_filename = "_".join(
@@ -100,7 +99,7 @@ class CSVPlotter:
 @click.command()
 @click.argument("files", nargs=-1, type=click.Path(exists=True))
 @click.option(
-    "--format",
+    "--output-format",
     type=click.Choice(["png", "svg", "pdf", "eps"]),
     default="png",
     help="Output format for the plot",
@@ -117,14 +116,14 @@ class CSVPlotter:
     default=False,
     help="Create a combined plot with multiple CSV files",
 )
-def create_plot(files, format, style, combined):
+def export_plot(files, output_format, style, combined):
     if not files:
         click.echo("Please provide one or more CSV files.")
         return
 
-    plotter = CSVPlotter(files, format, style, combined)
+    plotter = CSVPlotter(files, output_format, style, combined)
     plotter.create_plot()
 
 
 if __name__ == "__main__":
-    create_plot()
+    export_plot()
