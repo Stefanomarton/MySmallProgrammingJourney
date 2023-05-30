@@ -3,6 +3,9 @@ import os
 import csv
 import random
 from matplotlib import pyplot as plt
+from rich.console import Console
+
+console = Console()
 
 
 class CSVPlotter:
@@ -123,6 +126,9 @@ def export_plot(files, output_format, style, combined):
 
     plotter = CSVPlotter(files, output_format, style, combined)
     plotter.create_plot()
+
+    # Print a success message
+    console.print(":tada: [bold green]Plots created successfully![/bold green] :tada:")
 
 
 if __name__ == "__main__":
