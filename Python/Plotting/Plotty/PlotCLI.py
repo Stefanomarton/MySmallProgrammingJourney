@@ -1,24 +1,25 @@
-import argparse
+import click
 import os
 import csv
 import random
-import click
 from matplotlib import pyplot as plt
 
 
-@click.group()
-def cli():
-    """CLI group."""
-    pass
+class CSVPlotter:
+    def __init__(self, csv_files, output_format, plot_style, combined):
+        self.csv_files = csv_files
+        self.output_format = output_format
+        self.plot_style = plot_style
+        self.combined = combined
+        self.colors = [
+            "blue",
+            "red",
+            "green",
+            "orange",
+            "purple",
+        ]  # Add more colors if needed
 
-
-@click.command()
-def create_plot(csv_files, output_format, plot_style):
-    """Create a plot starting from data file."""
-    fig, ax = plt.subplots()  # Create a single figure and axes objects
-    colors = ["black", "blue", "red"]
-
-    for index, csv_file in enumerate(csv_files):
+    def process_csv_file(self, csv_file):
         x = []
         y = []
 
@@ -31,68 +32,99 @@ def create_plot(csv_files, output_format, plot_style):
                 except ValueError:
                     continue
 
-        # Set the color black if only 1 file csv is used
-        color = "black" if len(csv_files) == 1 else random.choice(colors)
-        colors.remove(color)
+        return x, y
 
-        # Use pathbase name to remove path and extension of the file
-        label = os.path.splitext(os.path.basename(csv_file))[0]
+    def create_plot(self):
+        if self.combined:
+            fig, ax = plt.subplots()  # Create a single figure and axes objects
 
-        if plot_style == "IR":
-            ax.plot(x, y, color=color, linewidth=0.4, label=label)
-            ax.set_xlabel("Numero d'onda / $cm^{-1}$")
-            ax.set_ylabel("T / %")
-            ax.set_xlim(4000, 500)  # Set the x-axis limits
-            ax.set_ylim(0, 100)  # Set the y-axis limits
-            ax2 = ax.twinx()
-            ax2.set_xticks(
-                ax.get_xticks()
-            )  # Set the same x-axis ticks as the primary axis
-            ax2.set_xlabel("")
-            ax2.set_ylabel("")
-            ax2.set_yticklabels([])  # Remove tick labels from ax2
+        for index, csv_file in enumerate(self.csv_files):
+            x, y = self.process_csv_file(csv_file)
 
-            ax3 = ax.twiny()  # Create the tertiary x-axis
-            ax3.set_xlabel("")
-            ax3.set_ylabel("")
-            ax3.set_xticks(
-                ax.get_xticks()
-            )  # Set the same x-axis ticks as the primary axis
-            ax3.set_xticklabels([])  # Remove tick labels from ax2
+            color = random.choice(self.colors)
+            label = os.path.splitext(os.path.basename(csv_file))[0]
 
-        elif plot_style == "NMR":
-            ax.plot(x, y, color=color, linewidth=0.2, label=label)
-            ax.set_xlabel("ppm")
-            ax.set_ylabel("A / %")
+            if self.plot_style == "IR":
+                if self.combined:
+                    ax.plot(x, y, color=color, linewidth=0.4, label=label)
+                    ax.set_xlabel("Numero d'onda / $cm^{-1}$")
+                    ax.set_ylabel("T / %")
+                    ax.set_xlim(4000, 500)  # Set the x-axis limits
+                    ax.set_ylim(0, 100)  # Set the y-axis limits
+                else:
+                    fig, ax = plt.subplots()
+                    ax.plot(x, y, color=color, linewidth=0.4, label=label)
+                    ax.set_xlabel("Numero d'onda / $cm^{-1}$")
+                    ax.set_ylabel("T / %")
+                    ax.set_xlim(4000, 500)  # Set the x-axis limits
+                    ax.set_ylim(0, 100)  # Set the y-axis limits
+                    ax.legend()  # Add the legend to the axes object
+                    output_filename = (
+                        os.path.splitext(csv_file)[0] + "." + self.output_format
+                    )
+                    plt.savefig(output_filename, format=self.output_format)
+                    plt.clf()
+                    click.echo(f"Plot saved as {output_filename}")
 
-    ax.legend()  # Add the legend to the axes object
+            elif self.plot_style == "NMR":
+                if self.combined:
+                    ax.plot(x, y, color=color, linewidth=0.2, label=label)
+                    ax.set_xlabel("ppm")
+                    ax.set_ylabel("A / %")
+                else:
+                    fig, ax = plt.subplots()
+                    ax.plot(x, y, color=color, linewidth=0.2, label=label)
+                    ax.set_xlabel("ppm")
+                    ax.set_ylabel("A / %")
+                    ax.legend()  # Add the legend to the axes object
+                    output_filename = (
+                        os.path.splitext(csv_file)[0] + "." + self.output_format
+                    )
+                    plt.savefig(output_filename, format=self.output_format)
+                    plt.clf()
+                    click.echo(f"Plot saved as {output_filename}")
 
-    if len(csv_files) == 1:
-        output_filename = os.path.splitext(csv_files[0])[0] + "." + output_format
-    else:
-        output_filename = "combined_plot." + output_format
+            self.colors.remove(color)
 
-    plt.savefig(output_filename, format=output_format)
-    plt.clf()
-    print(f"Plot saved as {output_filename}")
+        if self.combined:
+            combined_filename = "_".join(
+                [os.path.splitext(os.path.basename(f))[0] for f in self.csv_files]
+            )
+            output_filename = f"{combined_filename}.{self.output_format}"
+            ax.legend()  # Add the legend to the axes object
+            plt.savefig(output_filename, format=self.output_format)
+            plt.clf()
+            click.echo(f"Combined plot saved as {output_filename}")
+
+
+@click.command()
+@click.argument("files", nargs=-1, type=click.Path(exists=True))
+@click.option(
+    "--format",
+    type=click.Choice(["png", "svg", "pdf", "eps"]),
+    default="png",
+    help="Output format for the plot",
+)
+@click.option(
+    "--style",
+    type=click.Choice(["IR", "NMR"]),
+    default="default",
+    help="Plot style",
+)
+@click.option(
+    "--combined",
+    is_flag=True,
+    default=False,
+    help="Create a combined plot with multiple CSV files",
+)
+def create_plot(files, format, style, combined):
+    if not files:
+        click.echo("Please provide one or more CSV files.")
+        return
+
+    plotter = CSVPlotter(files, format, style, combined)
+    plotter.create_plot()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Create a plot from CSV files")
-    parser.add_argument("files", nargs="+", help="Paths to the CSV files")
-    parser.add_argument(
-        "--format",
-        choices=["png", "svg", "pdf", "eps"],
-        default="png",
-        help="Output format for the plot (default: png)",
-    )
-    parser.add_argument(
-        "--style",
-        choices=["IR", "NMR"],
-        default="default",
-        help="Plot style (default: default)",
-    )
-
-    args = parser.parse_args()
-
-    create_plot(args.files, args.format, args.style)
+    create_plot()
