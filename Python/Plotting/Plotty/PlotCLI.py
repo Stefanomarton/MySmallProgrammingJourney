@@ -22,6 +22,8 @@ class CSVPlotter:
             "purple",
             "black",
         ]  # Add more colors if needed
+        self.fig = None
+        self.ax = None
 
     def process_csv_file(self, csv_file):
         x = []
@@ -40,10 +42,10 @@ class CSVPlotter:
 
     def create_plot(self):
         if self.combined:
-            fig, ax = plt.subplots()  # Create a single figure and axes objects
-        else:
-            fig, ax = None, None
-
+            (
+                self.fig,
+                self.ax,
+            ) = plt.subplots()  # Create a single figure and axes objects
         for csv_file in self.csv_files:
             x, y = self.process_csv_file(csv_file)
 
