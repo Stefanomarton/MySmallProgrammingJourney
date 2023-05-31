@@ -47,16 +47,31 @@ class CSVPlotter:
         for csv_file in self.csv_files:
             x, y = self.process_csv_file(csv_file)
 
-            if self.combined:
-                color = random.choice(self.colors)  # Select a random color
-            else:
-                color = "black"  # Set the color to black for individual plots
-
+            color = "black" if not self.combined else random.choice(self.colors)
             label = os.path.splitext(os.path.basename(csv_file))[0]
 
             if self.plot_style == "IR":
                 if self.combined:
                     ax.plot(x, y, color=color, linewidth=0.4, label=label)
+                    ax.set_xlabel("Numero d'onda / $cm^{-1}$")
+                    ax.set_ylabel("T / %")
+                    ax.set_xlim(4000, 500)  # Set the x-axis limits
+                    ax.set_ylim(0, 100)  # Set the y-axis limits
+                    ax2 = ax.twinx()
+                    ax2.set_xticks(
+                        ax.get_xticks()
+                    )  # Set the same x-axis ticks as the primary axis
+                    ax2.set_xlabel("")
+                    ax2.set_ylabel("")
+                    ax2.set_yticklabels([])  # Remove tick labels from ax2
+                    ax3 = ax.twiny()  # Create the tertiary x-axis
+                    ax3.set_xlabel("")
+                    ax3.set_ylabel("")
+                    ax3.set_xticks(
+                        ax.get_xticks()
+                    )  # Set the same x-axis ticks as the primary axis
+                    ax3.set_xticklabels([])  # Remove tick labels from ax2
+
                 else:
                     fig, ax = plt.subplots()
                     ax.plot(x, y, color=color, linewidth=0.4, label=label)
@@ -64,6 +79,21 @@ class CSVPlotter:
                     ax.set_ylabel("T / %")
                     ax.set_xlim(4000, 500)  # Set the x-axis limits
                     ax.set_ylim(0, 100)  # Set the y-axis limits
+                    ax2 = ax.twinx()
+                    ax2.set_xticks(
+                        ax.get_xticks()
+                    )  # Set the same x-axis ticks as the primary axis
+                    ax2.set_xlabel("")
+                    ax2.set_ylabel("")
+                    ax2.set_yticklabels([])  # Remove tick labels from ax2
+
+                    ax3 = ax.twiny()  # Create the tertiary x-axis
+                    ax3.set_xlabel("")
+                    ax3.set_ylabel("")
+                    ax3.set_xticks(
+                        ax.get_xticks()
+                    )  # Set the same x-axis ticks as the primary axis
+                    ax3.set_xticklabels([])  # Remove tick labels from ax2
                     ax.legend()  # Add the legend to the axes object
                     output_filename = (
                         os.path.splitext(csv_file)[0] + "." + self.output_format
