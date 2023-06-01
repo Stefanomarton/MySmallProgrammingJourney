@@ -9,7 +9,10 @@ console = Console()
 
 
 class CSVPlotter:
+    """Plot from csv file."""
+
     def __init__(self, csv_files, output_format, plot_style, combined):
+        """Initialize all the variables."""
         self.csv_files = csv_files
         self.output_format = output_format
         self.plot_style = plot_style
@@ -24,6 +27,7 @@ class CSVPlotter:
         ]  # Add more colors if needed
 
     def process_csv_file(self, csv_file):
+        """Create x and y list for each file."""
         x = []
         y = []
 
@@ -39,6 +43,7 @@ class CSVPlotter:
         return x, y
 
     def create_plot(self):
+        """Create plot from x and y list."""
         if self.combined:
             fig, ax = plt.subplots()  # Create a single figure and axes objects
         else:
@@ -150,6 +155,7 @@ class CSVPlotter:
     help="Create a combined plot with multiple CSV files",
 )
 def export_plot(files, output_format, style, combined):
+    """Call an instance to export the plot."""
     if not files:
         click.echo("Please provide one or more CSV files.")
         return
