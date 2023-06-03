@@ -1,8 +1,9 @@
 import os
+import shutil
+import subprocess
+
 import click
 import pyfzf
-import subprocess
-import shutil
 
 
 @click.group()
