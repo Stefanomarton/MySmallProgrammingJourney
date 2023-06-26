@@ -107,14 +107,14 @@ class CSVPlotter:
                     plt.clf()
                     click.echo(f"Plot saved as {output_filename}")
 
-            elif self.plot_style == "NMR":
+            elif self.plot_style == "UV":
                 if self.combined:
                     ax.plot(x, y, color=color, linewidth=0.2, label=label)
                 else:
                     fig, ax = plt.subplots()
                     ax.plot(x, y, color=color, linewidth=0.2, label=label)
-                    ax.set_xlabel("ppm")
-                    ax.set_ylabel("A / %")
+                    ax.set_xlabel("$\lambda$ / nm ")
+                    ax.set_ylabel("A / a.u.")
                     ax.legend()  # Add the legend to the axes object
                     output_filename = (
                         os.path.splitext(csv_file)[0] + "." + self.output_format
@@ -144,7 +144,7 @@ class CSVPlotter:
 )
 @click.option(
     "--style",
-    type=click.Choice(["IR", "NMR"]),
+    type=click.Choice(["IR", "UV"]),
     default="default",
     help="Plot style",
 )
