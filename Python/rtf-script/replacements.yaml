@@ -1,0 +1,7 @@
+replacements:
+  - search: "g/cm3"
+    replace: "g/cm\\super 3\\nosupersub"
+  - search: "g/m3"
+    replace: "g/m\\super 3\\nosupersub"
+  - search: "BORSINI DR. EUGENIO"
+    replace: "LA MIA RAGIONE SOCIALE SR"
